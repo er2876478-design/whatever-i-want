@@ -1,230 +1,250 @@
-﻿'use client';
+'use client';
 
-import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, MailIcon, MapPinIcon, Menu, PhoneIcon, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
+import { Inter, Plus_Jakarta_Sans, Instrument_Serif } from 'next/font/google';
+import { ContactCard } from '@/components/ui/contact-card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
-const paletteOptions = [
-  { name: 'Midnight Green', accent: '#86d028', accentSoft: '#a7e651', glow: 'rgba(134, 208, 40, 0.35)', surface: '#0b191e', surfaceAlt: '#12262e', text: '#f3f5f6' },
-  { name: 'Slate Blue', accent: '#38bdf8', accentSoft: '#7dd3fc', glow: 'rgba(56, 189, 248, 0.32)', surface: '#0f172a', surfaceAlt: '#16263f', text: '#e2e8f0' },
-  { name: 'Copper', accent: '#d9774d', accentSoft: '#f3bd90', glow: 'rgba(217, 119, 77, 0.28)', surface: '#121212', surfaceAlt: '#1f1b18', text: '#f4efe8' },
-  { name: 'Violet', accent: '#8b5cf6', accentSoft: '#b794f4', glow: 'rgba(139, 92, 246, 0.28)', surface: '#0b0b14', surfaceAlt: '#171827', text: '#f5f3ff' },
-  { name: 'Teal Silver', accent: '#2dd4bf', accentSoft: '#7dd3d0', glow: 'rgba(45, 212, 191, 0.28)', surface: '#111827', surfaceAlt: '#1f2937', text: '#f8fafc' },
-];
-
-const experienceBullets = [
-  'Mission-critical scheduling and logistics coordination for high-volume operations',
-  'Operational data analysis, reporting, and process improvement across workstreams',
-  'Compliance-first documentation and training oversight in regulated environments',
-  'Cross-functional communication between crews, leadership, maintenance, and support teams',
-];
-
-const skills = [
-  'ARMS',
-  'GTIMS',
-  'Excel',
-  'Power BI',
-  'Scheduling Systems',
-  'Database Ops',
-  'Reporting',
-  'Process Design',
-  'Resource Planning',
-  'Operational Analysis',
-];
-
-const projects = [
-  {
-    title: 'Flight Ops Scheduling System',
-    summary: 'Reworked scheduling logic and coordination routines to support a large crew roster while improving on-time departures and reducing conflict resolution time.',
-    outcome: '15% scheduling efficiency gain',
-  },
-  {
-    title: 'Training Compliance Audit',
-    summary: 'Audited training records and created cleaner tracking procedures that reduced documentation errors and improved inspection readiness.',
-    outcome: '30% fewer documentation errors',
-  },
-  {
-    title: 'Resource Allocation Model',
-    summary: 'Managed aviation support inventory and personnel planning to reduce waste, protect mission readiness, and streamline resource usage.',
-    outcome: 'Millions in annual savings',
-  },
-];
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-plus-jakarta' });
+const instrumentSerif = Instrument_Serif({ weight: '400', subsets: ['latin'], variable: '--font-instrument' });
 
 export default function HomePage() {
-  const [selectedPalette, setSelectedPalette] = useState(paletteOptions[0]);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const themeStyle = useMemo(
-    () => ({
-      '--brand': selectedPalette.accent,
-      '--brand-soft': selectedPalette.accentSoft,
-      '--brand-glow': selectedPalette.glow,
-      '--surface': selectedPalette.surface,
-      '--surface-alt': selectedPalette.surfaceAlt,
-      '--text-main': selectedPalette.text,
-    }) as React.CSSProperties,
-    [selectedPalette],
-  );
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({ enableWorker: false });
+      hls.loadSource('https://stream.mux.com/tLkHO1qZoaaQOUeVWo8hEBeGQfySP02EPS02BmnNFyXys.m3u8');
+      hls.attachMedia(video);
+      return () => hls.destroy();
+    }
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = 'https://stream.mux.com/tLkHO1qZoaaQOUeVWo8hEBeGQfySP02EPS02BmnNFyXys.m3u8';
+    }
+  }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[var(--surface)] text-[var(--text-main)]" style={themeStyle}>
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <video autoPlay muted loop playsInline className="h-full w-full scale-105 object-cover opacity-75" src="https://strvid.nyc3.cdn.digitaloceanspaces.com/motionsite/hero-bg-glass-ball-1_5mb.mp4" />
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 45%, rgba(134, 208, 40, 0.06) 0%, rgba(11, 25, 30, 0.3) 45%, rgba(7, 20, 25, 0.88) 85%, rgba(3, 8, 10, 0.96) 100%), linear-gradient(to bottom, rgba(5, 12, 15, 0.82) 0%, transparent 22%, transparent 75%, rgba(4, 10, 12, 0.95) 100%), linear-gradient(to right, rgba(5, 12, 15, 0.75) 0%, transparent 28%, transparent 72%, rgba(5, 12, 15, 0.75) 100%)' }} />
-      </div>
+    <main className={`${inter.variable} ${plusJakarta.variable} ${instrumentSerif.variable} min-h-screen bg-[#070b0a] text-white`}>
+      <section className="relative min-h-screen overflow-hidden">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
+        />
 
-      <header className="relative z-20 w-full border-b border-white/10 bg-transparent backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 sm:px-8 lg:px-12">
-          <div className="flex items-center gap-4">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/5 shadow-[0_0_25px_var(--brand-glow)]">
-              <span className="h-3.5 w-3.5 rounded-full bg-[var(--brand)] shadow-[0_0_18px_var(--brand-glow)]" />
-            </div>
-            <div>
-              <div className="text-sm font-black tracking-[0.28em] text-white">EDWARD</div>
-              <div className="text-[9px] font-semibold tracking-[0.3em] text-white/60 uppercase">Operations Systems</div>
-            </div>
-          </div>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,_#070b0a_0%,_rgba(7,11,10,0.2)_45%,_rgba(7,11,10,0.75)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,_rgba(7,11,10,0.45)_0%,_rgba(7,11,10,0.85)_100%)]" />
 
-          <nav className="hidden items-center gap-10 text-xs font-semibold uppercase tracking-[0.24em] text-white/75 md:flex">
-            <a href="#about" className="transition hover:text-white">Profile</a>
-            <a href="#strengths" className="transition hover:text-white">Strengths</a>
-            <a href="#projects" className="transition hover:text-white">Projects</a>
+        <div className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute left-[25%] top-0 h-full w-px bg-white/10" />
+          <div className="absolute left-[50%] top-0 h-full w-px bg-white/10" />
+          <div className="absolute left-[75%] top-0 h-full w-px bg-white/10" />
+        </div>
+
+        <div className="pointer-events-none absolute left-1/2 top-[-8rem] h-[26rem] w-[42rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,_rgba(94,210,156,0.35),_rgba(0,0,0,0))] blur-[120px]" />
+
+        <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-6 sm:px-8 lg:px-12">
+          <a href="#" className="text-lg font-semibold tracking-[0.35em] text-white">Edward Rodriguez</a>
+
+          <nav className="hidden items-center gap-8 text-[15px] font-medium text-white/80 md:flex">
+            <a href="#projects" className="transition hover:text-[#5ed29c]">PROJECTS</a>
+            <a href="#blog" className="transition hover:text-[#5ed29c]">BLOG</a>
+            <a href="#about" className="transition hover:text-[#5ed29c]">ABOUT</a>
+            <a href="#contact" className="transition hover:text-[#5ed29c]">CONTACT</a>
+            <a href="/resume" className="transition hover:text-[#5ed29c]">RESUME</a>
           </nav>
 
-          <a href="mailto:er2876478@gmail.com" className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.24em] text-white transition hover:border-[var(--brand)] hover:text-[var(--brand)]">Contact</a>
-        </div>
-      </header>
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            className="rounded-full border border-white/20 p-2 text-white md:hidden"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </header>
 
-      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-88px)] max-w-[1440px] items-center gap-12 px-6 pb-16 pt-16 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-12 lg:pb-12">
-        <div className="max-w-3xl">
-          <div className="mb-6 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">
-            <span className="h-[2px] w-8 rounded-full bg-[var(--brand)]" />
-            Operations. Systems. Reliability.
-          </div>
-
-          <h1 className="max-w-2xl text-5xl font-black leading-[0.96] tracking-[-0.06em] text-white sm:text-6xl xl:text-[80px]">
-            Building resilient operations
-            <span className="mt-2 block text-4xl italic tracking-[-0.04em] text-[var(--brand)] sm:text-5xl xl:text-[78px]" style={{ textShadow: `0 0 20px ${selectedPalette.glow}` }}>
-              through better systems.
-            </span>
-          </h1>
-
-          <p className="mt-7 max-w-xl text-base text-white/75 sm:text-lg">
-            I help high-pressure operations run cleanly, predictably, and mission-ready by combining scheduling, data, compliance, and workflow design into systems people can trust.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <a href="#projects" className="inline-flex items-center gap-3 rounded-full bg-[var(--brand)] px-7 py-4 text-xs font-extrabold uppercase tracking-[0.22em] text-[#0b191e] shadow-[0_18px_35px_rgba(0,0,0,0.25)] transition hover:brightness-110">View work</a>
-            <a href="mailto:er2876478@gmail.com" className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:border-white/35 hover:bg-white/10">Get in touch</a>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-5 lg:items-end">
-          <div className="w-full max-w-sm space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.25)]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand)]/15 text-[var(--brand)]">◎</div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--brand)]">Impact</div>
-                  <div className="text-3xl font-black text-white">106</div>
-                </div>
-              </div>
+        {mobileMenuOpen && (
+          <div className="absolute inset-0 z-20 bg-[#070b0a]/95 px-6 py-24 md:hidden">
+            <div className="flex flex-col gap-6 text-xl font-semibold uppercase tracking-[0.28em] text-white">
+              <a href="#projects" onClick={() => setMobileMenuOpen(false)}>Projects</a>
+              <a href="#blog" onClick={() => setMobileMenuOpen(false)}>Blog</a>
+              <a href="#about" onClick={() => setMobileMenuOpen(false)}>About</a>
+              <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+              <Link href="/resume" onClick={() => setMobileMenuOpen(false)}>Resume</Link>
             </div>
-            <div className="text-[11px] font-bold uppercase tracking-[0.25em] text-[var(--brand)]">Aircrew members supported</div>
           </div>
+        )}
 
-          <div className="w-full max-w-sm space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.25)]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand)]/15 text-[var(--brand)]">◌</div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--brand)]">Efficiency</div>
-                  <div className="text-3xl font-black text-white">15%</div>
-                </div>
-              </div>
+        <div className="relative z-10 mx-auto flex min-h-[calc(100vh-88px)] max-w-7xl flex-col justify-center px-6 pb-16 pt-16 sm:px-8 lg:px-12">
+          <div className="pointer-events-none mb-8 flex h-[200px] w-[200px] translate-y-[-50px] items-center justify-center rounded-[28px] border border-white/10 bg-[rgba(255,255,255,0.01)] bg-blend-luminosity p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-[4px] before:absolute before:inset-0 before:rounded-[28px] before:p-[1.4px] before:content-[''] before:[background:linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(255,255,255,0.08))] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,_linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude]">
+            <div className="relative h-36 w-36 overflow-hidden rounded-2xl border border-white/20 bg-white/5 shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
+              <Image
+                src="/images/user/profile-photo.png"
+                alt="Profile photo"
+                fill
+                className="object-cover"
+                sizes="144px"
+                priority
+              />
             </div>
-            <div className="text-[11px] font-bold uppercase tracking-[0.25em] text-[var(--brand)]">Scheduling improvement</div>
           </div>
-        </div>
-      </section>
 
-      <section id="about" className="relative z-10 mx-auto max-w-[1200px] px-6 pb-16 sm:px-8 lg:px-12">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[30px] border border-white/10 bg-white/5 p-7 backdrop-blur-xl">
-            <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">Profile</div>
-            <h2 className="text-3xl font-black tracking-[-0.05em] text-white sm:text-4xl">Mission-minded operator with a systems mindset.</h2>
-            <p className="mt-5 text-base leading-8 text-white/75">
-              I’ve spent the last four years optimizing operations in high-pressure environments, managing aircraft crew logistics, training records, scheduling, and regulatory compliance. My work blends operational discipline with practical process design, data visibility, and team coordination.
+          <div className="max-w-4xl">
+            <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.3em] text-[#5ed29c]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
+              Career-Ready Curriculum
             </p>
+            <h1 className="max-w-4xl text-[40px] font-black uppercase leading-[0.95] tracking-[-0.03em] text-white sm:text-[56px] lg:text-[72px]" style={{ fontFamily: 'var(--font-inter)' }}>
+              LAUNCH YOUR<br />CODING CAREER<span className="text-[#5ed29c]">.</span>
+            </h1>
+            <p className="mt-6 max-w-[512px] text-[14px] leading-7 text-white/70" style={{ fontFamily: 'var(--font-inter)' }}>
+              Master in-demand coding skills with structured lessons, hands-on projects, and mentorship designed to make you work-ready.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <a href="#projects" className="inline-flex items-center gap-3 rounded-full bg-[#5ed29c] px-6 py-3 text-[12px] font-bold uppercase tracking-[0.24em] text-[#070b0a] transition hover:brightness-110">
+                Get Started <ArrowRight size={16} />
+              </a>
+            </div>
           </div>
-
-          <div className="rounded-[30px] border border-white/10 bg-[var(--surface-alt)] p-7">
-            <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">Core focus</div>
-            <ul className="space-y-3 text-sm text-white/75">
-              {experienceBullets.map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_20px_var(--brand-glow)]" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </section>
 
-      <section id="strengths" className="relative z-10 mx-auto max-w-[1200px] px-6 pb-16 sm:px-8 lg:px-12">
-        <div className="mb-6 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">Tooling & skills</div>
-        <div className="flex flex-wrap gap-3">
-          {skills.map((skill) => (
-            <span key={skill} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{skill}</span>
-          ))}
-        </div>
-      </section>
+      <section id="projects" aria-labelledby="projects-heading" className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#5ed29c]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
+            Featured Project
+          </p>
+          <h2 id="projects-heading" className="mt-3 text-2xl font-black text-white sm:text-3xl">Projects</h2>
 
-      <section id="projects" className="relative z-10 mx-auto max-w-[1200px] px-6 pb-20 sm:px-8 lg:px-12">
-        <div className="mb-6 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">Selected work</div>
-        <div className="grid gap-5 lg:grid-cols-3">
-          {projects.map((project) => (
-            <article key={project.title} className="rounded-[28px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:border-[var(--brand)]/40 hover:bg-white/7">
-              <div className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--brand)]">Case study</div>
-              <h3 className="text-2xl font-black tracking-[-0.05em] text-white">{project.title}</h3>
-              <p className="mt-4 text-sm leading-7 text-white/70">{project.summary}</p>
-              <div className="mt-6 border-t border-white/10 pt-4 text-sm font-semibold text-[var(--brand)]">{project.outcome}</div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="relative z-10 mx-auto max-w-[1200px] px-6 pb-20 sm:px-8 lg:px-12">
-        <div className="rounded-[30px] border border-white/10 bg-[var(--surface-alt)] p-7 backdrop-blur-xl">
-          <div className="mb-6 text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--brand)]">Design options</div>
-          <div className="flex flex-wrap gap-3">
-            {paletteOptions.map((palette) => (
-              <button
-                key={palette.name}
-                type="button"
-                onClick={() => setSelectedPalette(palette)}
-                className={`flex items-center gap-3 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
-                  selectedPalette.name === palette.name ? 'border-white/40 bg-white/10 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:text-white'
-                }`}
+          <article aria-labelledby="beans-place-title" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h3 id="beans-place-title" className="text-xl font-extrabold text-white">Beans Place</h3>
+                <p className="mt-3 max-w-2xl text-base leading-7 text-white/75">
+                  A modern web experience for a cafe brand focused on clear menu browsing,
+                  inviting visuals, and smooth responsiveness across desktop and mobile.
+                </p>
+              </div>
+              <a
+                href="https://your-beans-project-url.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open Beans Place live project website in a new tab"
+                className="rounded-full border border-[#5ed29c]/40 bg-[#5ed29c]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#9cf0c8] transition hover:bg-[#5ed29c]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5ed29c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b0a]"
               >
-                <span className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: palette.accent }} />
-                {palette.name}
-              </button>
-            ))}
-          </div>
+                Live Project
+              </a>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+              <span className="rounded-full border border-white/15 px-3 py-1">React</span>
+              <span className="rounded-full border border-white/15 px-3 py-1">HTML</span>
+              <span className="rounded-full border border-white/15 px-3 py-1">CSS</span>
+            </div>
+          </article>
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-white/10 bg-black/10 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-6 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-12">
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-[0.26em] text-[var(--brand)]">Ready to work</div>
-            <div className="mt-2 text-2xl font-black tracking-[-0.05em] text-white">Let’s build what keeps operations moving.</div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <a href="mailto:er2876478@gmail.com" className="rounded-full bg-[var(--brand)] px-6 py-3 text-xs font-extrabold uppercase tracking-[0.22em] text-[#0b191e]">Email me</a>
-            <a href="tel:+18454533794" className="rounded-full border border-white/20 bg-white/5 px-6 py-3 text-xs font-extrabold uppercase tracking-[0.22em] text-white">845-453-3794</a>
-          </div>
+      <section id="blog" className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#5ed29c]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
+            From The Blog
+          </p>
+          <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">My Developer Notes</h2>
+          <p className="mt-4 text-base leading-8 text-white/75">
+            Welcome to my digital notebook. I use this space to break down complex web development concepts, share solutions to tricky coding bugs, and document my journey as a developer. Communication is at the heart of everything I do, so my goal is to make technical topics simple, engaging, and easy to understand for everyone.
+          </p>
         </div>
-      </footer>
+      </section>
+      <section id="contact" className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
+        <div className="space-y-6 rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#5ed29c]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
+            Contact Me
+          </p>
+          <h2 className="text-2xl font-black text-white sm:text-3xl">Let's connect</h2>
+<ContactCard
+            title="Get in touch"
+            description="If you have any questions regarding my work or would like to collaborate, please send a message. I do my best to respond within 1 business day."
+            className="rounded-2xl border-white/15 bg-white/[0.03] text-white"
+            formSectionClassName="border-white/10 bg-white/[0.04]"
+            contactInfo={[
+              {
+                icon: MailIcon,
+                label: 'Email',
+                value: 'er2876478@gmail.com',
+              },
+              {
+                icon: PhoneIcon,
+                label: 'Phone',
+                value: '(555) 123-4567',
+              },
+              {
+                icon: MapPinIcon,
+                label: 'Location',
+                value: 'Remote / United States',
+                className: 'md:col-span-2 lg:col-span-1',
+              },
+            ]}
+          >
+            <form className="w-full space-y-4" action="#" method="post">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="contact-name" className="text-white">Name</Label>
+                <Input id="contact-name" type="text" placeholder="Your name" className="border-white/20 bg-[#0d1514] text-white" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="contact-email" className="text-white">Email</Label>
+                <Input id="contact-email" type="email" placeholder="you@example.com" className="border-white/20 bg-[#0d1514] text-white" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="contact-phone" className="text-white">Phone</Label>
+                <Input id="contact-phone" type="tel" placeholder="(555) 123-4567" className="border-white/20 bg-[#0d1514] text-white" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="contact-message" className="text-white">Message</Label>
+                <Textarea id="contact-message" placeholder="How can I help?" className="border-white/20 bg-[#0d1514] text-white" />
+              </div>
+              <Button className="w-full bg-[#5ed29c] font-bold text-[#070b0a] hover:bg-[#75dcb0]" type="button">
+                Submit
+              </Button>
+            </form>
+          </ContactCard>
+        </div>
+      </section>
+      <section id="about" className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+          <h2 className="text-2xl font-black text-white">About Me</h2>
+          <p className="mt-4 text-base leading-8 text-white/75">
+            I am a junior developer who loves bringing web designs to life using
+            React, HTML, and CSS. While I enjoy the technical challenge of
+            writing clean code, my biggest asset is my communication. I thrive
+            on asking the right questions, listening to user needs, and
+            collaborating with teams to build great things. I am currently
+            looking for a remote position and am excited about the prospect of
+            traveling to connect with my team and clients.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }
+
+
+
+
+
